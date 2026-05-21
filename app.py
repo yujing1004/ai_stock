@@ -52,8 +52,8 @@ def fetch_metrics():
         qqq_series = indexes['QQQ'].dropna()
         qqq_dd = ((qqq_series.iloc[-1] - qqq_series.max()) / qqq_series.max()) * 100
         
-        # Format as "S:-0.8 / Q:-0.8" for clarity
-        metrics["drawdown"]["value"] = f"S:{round(spy_dd, 1)} / Q:{round(qqq_dd, 1)}"
+        # Store as dictionary for two-column layout in template
+        metrics["drawdown"]["value"] = {"spy": round(spy_dd, 1), "qqq": round(qqq_dd, 1)}
         metrics["drawdown"]["status"] = "risk-off" if (spy_dd < -5 or qqq_dd < -5) else "risk-on"
     except Exception as e:
         print(f"Error calculating combined drawdown: {e}")
