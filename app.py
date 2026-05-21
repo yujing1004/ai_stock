@@ -5,6 +5,7 @@ import requests
 import io
 import math
 import fear_greed
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -75,7 +76,8 @@ def fetch_metrics():
 @app.route('/')
 def index():
     metrics = fetch_metrics()
-    return render_template('index.html', metrics=metrics)
+    last_updated = datetime.now().strftime("%H:%M:%S")
+    return render_template('index.html', metrics=metrics, last_updated=last_updated)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8080)

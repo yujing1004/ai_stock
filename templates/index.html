@@ -22,14 +22,22 @@
                 <h1 class="text-4xl font-black tracking-tight text-white mb-2">
                     Market <span class="text-emerald-400">Intelligence</span>
                 </h1>
-                <p class="text-slate-400 font-medium">Autonomous multi-factor sentiment & risk analysis</p>
+                <p class="text-slate-400 font-medium">Last Updated: <span class="text-emerald-400/80">{{ last_updated }}</span></p>
             </div>
-            <div class="text-right">
+            <div class="text-right flex flex-col items-end gap-2">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">
                     Live System
                 </span>
+                <p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest italic">Auto-refreshes every 5m</p>
             </div>
         </header>
+
+        <script>
+            // Auto-refresh every 5 minutes (300,000 ms)
+            setTimeout(() => {
+                window.location.reload();
+            }, 300000);
+        </script>
 
         <!-- Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
