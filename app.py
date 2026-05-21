@@ -15,7 +15,7 @@ def fetch_metrics():
         "yield": {"name": "10Y Treasury Yield", "value": "N/A", "suffix": "%", "status": "neutral"},
         "oil": {"name": "WTI Crude Oil", "value": "N/A", "suffix": "", "status": "neutral"},
         "gold": {"name": "Gold", "value": "N/A", "suffix": "", "status": "neutral"},
-        "drawdown": {"name": "S&P 500 Drawdown", "value": "N/A", "suffix": "%", "status": "neutral"},
+        "drawdown": {"name": "SPX / NDX Drawdown", "value": "N/A", "suffix": "%", "status": "neutral"},
         "fear_greed": {"name": "CNN Fear & Greed", "value": "N/A", "suffix": "", "status": "neutral"},
         "credit_spread": {"name": "Credit Spread (HY)", "value": "N/A", "suffix": "%", "status": "neutral"},
         "bank_risk": {"name": "Bank Credit Risk", "value": "Placeholder", "suffix": "", "status": "neutral"},
@@ -39,14 +39,24 @@ def fetch_metrics():
     except Exception as e:
         print(f"Error fetching yfinance: {e}")
 
-    # 2. Calculate SPY Drawdown
+    # 2. Calculate SPY & QQQ Drawdown
     try:
-        spy = yf.download("SPY", period="1y", progress=False)['Close']
-        max_price = spy.max().iloc[0]
-        current_price = spy.iloc[-1].iloc[0]
-        drawdown = ((current_price - max_price) / max_price) * 100
-        metrics["drawdown"]["value"] = round(drawdown, 2)
-        metrics["drawdown"]["status"] = "risk-off" if drawdown < -5 else "risk-on"
+        indexes = yf.download(["SPY", "QQQ"], period="1y", progress=False)['Close']
+        
+        # SPY Drawdown
+        spy = indexes['SPY']
+        spy_max = spy.max()
+        spy_curr = spy.iloc[-1]
+        spy_dd = ((spy_curr - spy_max) / spy_max) * 100
+        
+        # QQQ Drawdown
+        qqq = indexes['QQQ']
+        qqq_max = qqq.max()
+        qqq_curr = qqq.iloc[-1]
+        qqq_dd = ((qqq_curr - qqq_max) / qqq_max) * 100
+        
+        metrics["drawdown"]["value"] = f"{round(spy_dd, 1)} / {round(qqq_dd, 1)}"
+        metrics["drawdown"]["status"] = "risk-off" if (spy_dd < -5 or qqq_dd < -5) else "risk-on"
     except Exception as e:
         print(f"Error calculating drawdown: {e}")
 
@@ -80,4 +90,4 @@ def index():
     return render_template('index.html', metrics=metrics, last_updated=last_updated)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=8888)
