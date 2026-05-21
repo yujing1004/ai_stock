@@ -41,24 +41,22 @@ def fetch_metrics():
 
     # 2. Calculate SPY & QQQ Drawdown
     try:
+        # Fetching 1y data for both indexes
         indexes = yf.download(["SPY", "QQQ"], period="1y", progress=False)['Close']
         
-        # SPY Drawdown
-        spy = indexes['SPY']
-        spy_max = spy.max()
-        spy_curr = spy.iloc[-1]
-        spy_dd = ((spy_curr - spy_max) / spy_max) * 100
+        # Calculate SPY Drawdown
+        spy_series = indexes['SPY'].dropna()
+        spy_dd = ((spy_series.iloc[-1] - spy_series.max()) / spy_series.max()) * 100
         
-        # QQQ Drawdown
-        qqq = indexes['QQQ']
-        qqq_max = qqq.max()
-        qqq_curr = qqq.iloc[-1]
-        qqq_dd = ((qqq_curr - qqq_max) / qqq_max) * 100
+        # Calculate QQQ Drawdown
+        qqq_series = indexes['QQQ'].dropna()
+        qqq_dd = ((qqq_series.iloc[-1] - qqq_series.max()) / qqq_series.max()) * 100
         
-        metrics["drawdown"]["value"] = f"{round(spy_dd, 1)} / {round(qqq_dd, 1)}"
+        # Format as "S:-0.8 / Q:-0.8" for clarity
+        metrics["drawdown"]["value"] = f"S:{round(spy_dd, 1)} / Q:{round(qqq_dd, 1)}"
         metrics["drawdown"]["status"] = "risk-off" if (spy_dd < -5 or qqq_dd < -5) else "risk-on"
     except Exception as e:
-        print(f"Error calculating drawdown: {e}")
+        print(f"Error calculating combined drawdown: {e}")
 
     # 3. Fetch CNN Fear & Greed
     try:
