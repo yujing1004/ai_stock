@@ -13,8 +13,8 @@ def fetch_metrics():
     metrics = {
         "vix": {"name": "VIX Index", "value": "N/A", "suffix": "", "status": "neutral"},
         "yield": {"name": "10Y Treasury Yield", "value": "N/A", "suffix": "%", "status": "neutral"},
-        "oil": {"name": "WTI Crude Oil", "value": "N/A", "suffix": "", "status": "neutral"},
-        "gold": {"name": "Gold", "value": "N/A", "suffix": "", "status": "neutral"},
+        "oil": {"name": "WTI Crude Oil", "value": "N/A", "suffix": "/bbl", "status": "neutral"},
+        "gold": {"name": "Gold", "value": "N/A", "suffix": "/oz", "status": "neutral"},
         "drawdown": {"name": "sp500 / qqq drawdown", "value": "N/A", "suffix": "%", "status": "neutral"},
         "fear_greed": {"name": "CNN Fear & Greed", "value": "N/A", "suffix": "", "status": "neutral"},
         "credit_spread": {"name": "Credit Spread (HY)", "value": "N/A", "suffix": "%", "status": "neutral"},
