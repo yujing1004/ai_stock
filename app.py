@@ -42,15 +42,17 @@ def fetch_metrics():
     # 2. Calculate SPY & QQQ Drawdown
     try:
         # Fetching 1y data for both indexes
-        indexes = yf.download(["SPY", "QQQ"], period="1y", progress=False)['Close']
+        data = yf.download(["SPY", "QQQ"], period="1y", progress=False)
         
-        # Calculate SPY Drawdown
-        spy_series = indexes['SPY'].dropna()
-        spy_dd = ((spy_series.iloc[-1] - spy_series.max()) / spy_series.max()) * 100
+        # Calculate SPY Drawdown (Max High to Current Close)
+        spy_high = data['High']['SPY'].dropna()
+        spy_close = data['Close']['SPY'].dropna()
+        spy_dd = ((spy_close.iloc[-1] - spy_high.max()) / spy_high.max()) * 100
         
-        # Calculate QQQ Drawdown
-        qqq_series = indexes['QQQ'].dropna()
-        qqq_dd = ((qqq_series.iloc[-1] - qqq_series.max()) / qqq_series.max()) * 100
+        # Calculate QQQ Drawdown (Max High to Current Close)
+        qqq_high = data['High']['QQQ'].dropna()
+        qqq_close = data['Close']['QQQ'].dropna()
+        qqq_dd = ((qqq_close.iloc[-1] - qqq_high.max()) / qqq_high.max()) * 100
         
         # Store as dictionary for two-column layout in template
         metrics["drawdown"]["value"] = {"spy": round(spy_dd, 1), "qqq": round(qqq_dd, 1)}
