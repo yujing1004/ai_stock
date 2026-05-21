@@ -1,16 +1,81 @@
 from flask import Flask, render_template
-import pandas as pd
 import yfinance as yf
+import pandas as pd
+import requests
+import io
+import math
+import fear_greed
 
 app = Flask(__name__)
 
+def fetch_metrics():
+    metrics = {
+        "vix": {"name": "VIX Index", "value": "N/A", "suffix": "", "status": "neutral"},
+        "yield": {"name": "10Y Treasury Yield", "value": "N/A", "suffix": "%", "status": "neutral"},
+        "oil": {"name": "WTI Crude Oil", "value": "N/A", "suffix": "", "status": "neutral"},
+        "gold": {"name": "Gold", "value": "N/A", "suffix": "", "status": "neutral"},
+        "drawdown": {"name": "S&P 500 Drawdown", "value": "N/A", "suffix": "%", "status": "neutral"},
+        "fear_greed": {"name": "CNN Fear & Greed", "value": "N/A", "suffix": "", "status": "neutral"},
+        "credit_spread": {"name": "Credit Spread (HY)", "value": "N/A", "suffix": "%", "status": "neutral"},
+        "bank_risk": {"name": "Bank Credit Risk", "value": "Placeholder", "suffix": "", "status": "neutral"},
+        "market_breadth": {"name": "Market Breadth", "value": "Placeholder", "suffix": "", "status": "neutral"}
+    }
+
+    # 1. Fetch yfinance tickers
+    try:
+        tickers = {
+            "^VIX": "vix",
+            "^TNX": "yield",
+            "CL=F": "oil",
+            "GC=F": "gold"
+        }
+        data = yf.download(list(tickers.keys()), period="1d", progress=False)['Close']
+        for ticker, key in tickers.items():
+            val = data[ticker].iloc[-1]
+            metrics[key]["value"] = round(val, 2)
+            if key == "vix":
+                metrics[key]["status"] = "risk-off" if val > 20 else "risk-on"
+    except Exception as e:
+        print(f"Error fetching yfinance: {e}")
+
+    # 2. Calculate SPY Drawdown
+    try:
+        spy = yf.download("SPY", period="1y", progress=False)['Close']
+        max_price = spy.max().iloc[0]
+        current_price = spy.iloc[-1].iloc[0]
+        drawdown = ((current_price - max_price) / max_price) * 100
+        metrics["drawdown"]["value"] = round(drawdown, 2)
+        metrics["drawdown"]["status"] = "risk-off" if drawdown < -5 else "risk-on"
+    except Exception as e:
+        print(f"Error calculating drawdown: {e}")
+
+    # 3. Fetch CNN Fear & Greed
+    try:
+        score = fear_greed.get_score()
+        metrics["fear_greed"]["value"] = int(score)
+        metrics["fear_greed"]["status"] = "risk-off" if score < 40 else "risk-on"
+    except Exception as e:
+        print(f"Error fetching Fear & Greed: {e}")
+
+    # 4. Fetch Credit Spread (FRED)
+    try:
+        url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2"
+        response = requests.get(url)
+        df = pd.read_csv(io.StringIO(response.text))
+        # Get the last row which is not '.' (placeholder for missing data)
+        valid_data = df[df['BAMLH0A0HYM2'] != '.']
+        latest_val = float(valid_data['BAMLH0A0HYM2'].iloc[-1])
+        metrics["credit_spread"]["value"] = latest_val
+        metrics["credit_spread"]["status"] = "risk-off" if latest_val > 4.5 else "risk-on"
+    except Exception as e:
+        print(f"Error fetching FRED: {e}")
+
+    return metrics
+
 @app.route('/')
 def index():
-    # Simple verification of packages
-    data = {'Status': ['Success'], 'Package': ['Pandas']}
-    df = pd.DataFrame(data)
-    
-    return render_template('index.html', status="Environment Setup Complete", df_html=df.to_html(classes='min-w-full divide-y divide-gray-200'))
+    metrics = fetch_metrics()
+    return render_template('index.html', metrics=metrics)
 
 if __name__ == '__main__':
     app.run(debug=True)
