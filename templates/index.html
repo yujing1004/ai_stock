@@ -46,7 +46,7 @@
             {% set metric = metrics[key] %}
             <div class="card-gradient p-4 rounded-xl border border-slate-800 shadow-lg hover:border-slate-700 transition-all group">
                 <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] leading-tight">{{ metric.name }}</h3>
+                    <h3 class="text-slate-300 text-[11px] font-black uppercase tracking-[0.2em] leading-tight">{{ metric.name }}</h3>
                     <div class="w-1.5 h-1.5 rounded-full {% if metric.status == 'risk-on' %}bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]{% elif metric.status == 'risk-off' %}bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]{% else %}bg-slate-700{% endif %}"></div>
                 </div>
                 
